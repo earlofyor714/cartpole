@@ -3,7 +3,9 @@ from collections import deque
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.optimizers import Adam
+from keras.callbacks import ModelCheckpoint
 import numpy as np
+import os
 import random
 
 
@@ -20,6 +22,8 @@ class Agent:
         self.epsilon_decay = 0.995
 
         self.model = self._build_model()
+        #self.checkpointer = ModelCheckpoint(filepath='saved_models/weights.best.from_scratch.h5',
+        #                                    verbose=1, save_best_only=False)
         self.memory = deque(maxlen=2000)
 
     def _build_model(self):
@@ -53,8 +57,15 @@ class Agent:
 
             # Train the NN with the state and target_f
             self.model.fit(state, target_f, epochs=1, verbose=0)
+
+            # Need to do 'pip install h5py' to save model
+            if os.path.exists('saved_models/weights.best.from_scratch.h5'):
+                os.remove('saved_models/weights.best.from_scratch.h5')
+            self.model.save_weights('saved_models/weights.best.from_scratch.h5')
+
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
         else:
             print("Without learning")
             self.epsilon = 0
+            # self.model.load_weights('saved_models/weights.best.from_scratch.hdf5')
